@@ -54,21 +54,33 @@ const RealTimeMarketAnalysis = ({ autoRefresh, refreshInterval, lastUpdate }) =>
     const newPocketOptionData = {};
 
     try {
-      for (const symbol of selectedSymbols) {
-        // Fetch market data
-        const marketInfo = await dataManager.getMarketData(symbol);
-        if (marketInfo) {
-          newMarketData[symbol] = marketInfo;
-          
-          // Generate Pocket Option simulation
-          const pocketInfo = generatePocketOptionData(
-            marketInfo.currentPrice, 
-            marketInfo.technicalIndicators
+      const updateAllData = async () => {
+        if (selectedSymbols.length === 0) return;
+      
+        setLoading(true);
+      
+        try {
+          // Run all fetches in parallel instead of sequentially
+          const marketResults = await Promise.all(
+            selectedSymbols.map(symbol => dataManager.getMarketData(symbol))
           );
-          newPocketOptionData[symbol] = pocketInfo;
-        }
-      }
-
+      
+          const newMarketData = {};
+          const newPocketOptionData = {};
+      
+          selectedSymbols.forEach((symbol, i) => {
+            const marketInfo = marketResults[i];
+            if (marketInfo) {
+              newMarketData[symbol] = marketInfo;
+      
+              // Generate Pocket Option simulation
+              newPocketOptionData[symbol] = generatePocketOptionData(
+                marketInfo.currentPrice,
+                marketInfo.technicalIndicators
+              );
+            }
+          });
+          
       setMarketData(newMarketData);
       setPocketOptionData(newPocketOptionData);
     } catch (error) {
