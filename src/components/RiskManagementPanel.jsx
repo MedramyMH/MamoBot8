@@ -18,6 +18,10 @@ const RiskManagementPanel = ({
     takeProfit: 0.1
   });
   const [showCustomSettings, setShowCustomSettings] = useState(false);
+  
+  const calcPositionSize = (accountRisk, stopLossPct) => {
+    return (portfolioValue * accountRisk) / stopLossPct;
+  };
 
   const riskProfiles = {
     conservative: {
@@ -35,7 +39,7 @@ const RiskManagementPanel = ({
       description: 'Moderate risk, balanced returns',
       maxRisk: 0.05,
       minConfidence: 0.7,
-      positionSize: 0.2,
+      positionSize: calcPositionSize,
       stopLoss: 0.05,
       takeProfit: 0.1,
       color: 'text-blue-400 bg-blue-500/20 border-blue-500/50'
@@ -66,12 +70,12 @@ const RiskManagementPanel = ({
   };
 
   const calculatePortfolioRisk = () => {
-    if (!currentPositions || currentPositions.length === 0) return 0;
-    
+    if (!currentPositions?.length) return 0;
     const totalRisk = currentPositions.reduce((sum, position) => {
-      return sum + (position.size * position.riskScore / 100);
+      const volatilityFactor = position.volatility || 1; // add ATR or std-dev
+      const confidenceFactor = position.confidence || 0.7;
+      return sum + (position.size * position.riskScore * volatilityFactor * (1 - confidenceFactor));
     }, 0);
-    
     return (totalRisk / portfolioValue) * 100;
   };
 
