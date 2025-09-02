@@ -22,9 +22,11 @@ const RealTimeMarketAnalysis = ({ autoRefresh, refreshInterval, lastUpdate }) =>
   const dataManager = new TradingDataManager();
 
   // Simulate Pocket Option data with variations
+
   const generatePocketOptionData = (marketPrice, marketIndicators) => {
-    const priceVariation = (Math.random() - 0.5) * 0.04; // ±2% variation
-    const pocketPrice = marketPrice * (1 + priceVariation);
+    const spread = 0.0015; // 0.15% realistic spread
+    const directionBias = marketIndicators.trend === "bullish" ? 1 : -1;
+    const pocketPrice = marketPrice * (1 + spread * directionBias);
     
     const pocketIndicators = {};
     Object.keys(marketIndicators).forEach(key => {
