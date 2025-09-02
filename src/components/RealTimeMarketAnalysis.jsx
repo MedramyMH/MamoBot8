@@ -53,42 +53,45 @@ const RealTimeMarketAnalysis = ({ autoRefresh, refreshInterval, lastUpdate }) =>
     const newMarketData = {};
     const newPocketOptionData = {};
 
-    try {
-      const updateAllData = async () => {
-        if (selectedSymbols.length === 0) return;
-      
-        setLoading(true);
-      
-        try {
-          // Run all fetches in parallel instead of sequentially
-          const marketResults = await Promise.all(
-            selectedSymbols.map(symbol => dataManager.getMarketData(symbol))
+  const updateAllData = async () => {
+  if (selectedSymbols.length === 0) return;
+
+  setLoading(true);
+
+  try {
+      // Run all fetches in parallel
+      const marketResults = await Promise.all(
+        selectedSymbols.map(symbol => dataManager.getMarketData(symbol))
+      );
+  
+      const newMarketData = {};
+      const newPocketOptionData = {};
+  
+      selectedSymbols.forEach((symbol, i) => {
+        const marketInfo = marketResults[i];
+        if (marketInfo) {
+          newMarketData[symbol] = marketInfo;
+  
+          // Generate Pocket Option simulation
+          newPocketOptionData[symbol] = generatePocketOptionData(
+            marketInfo.currentPrice,
+            marketInfo.technicalIndicators
           );
-      
-          const newMarketData = {};
-          const newPocketOptionData = {};
-      
-          selectedSymbols.forEach((symbol, i) => {
-            const marketInfo = marketResults[i];
-            if (marketInfo) {
-              newMarketData[symbol] = marketInfo;
-      
-              // Generate Pocket Option simulation
-              newPocketOptionData[symbol] = generatePocketOptionData(
-                marketInfo.currentPrice,
-                marketInfo.technicalIndicators
-              );
-            }
-          });
-          
+        }
+      });
+  
       setMarketData(newMarketData);
       setPocketOptionData(newPocketOptionData);
     } catch (error) {
-      console.error('Error updating data:', error);
+      console.error("Error updating data:", error);
     } finally {
       setLoading(false);
     }
   };
+
+
+
+
 
   // Auto-refresh effect
   useEffect(() => {
