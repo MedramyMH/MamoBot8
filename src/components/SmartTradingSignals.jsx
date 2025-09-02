@@ -40,6 +40,24 @@ const SmartTradingSignals = ({ selectedSymbols, marketData, pocketOptionData, sm
     }).format(price);
   };
 
+  const adjustedConfidence = (() => {
+    let conf = signal.confidence;
+  
+    // Penalize confidence for price divergence
+    if (priceDiscrepancy > 2) {
+      conf *= 0.85;
+    }
+  
+    // Penalize if RSI disagreement between sources
+    const rsiDiff = Math.abs((market.technicalIndicators.rsi || 0) - (pocket.indicators.rsi || 0));
+    if (rsiDiff > 10) {
+      conf *= 0.9;
+    }
+  
+    return Math.min(1, conf);
+  })();
+
+
   const formatPercentage = (value) => {
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
   };
@@ -129,11 +147,11 @@ const SmartTradingSignals = ({ selectedSymbols, marketData, pocketOptionData, sm
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-400">
-                      {(signal.confidence * 100).toFixed(0)}%
+                      {(adjustedConfidence * 100).toFixed(0)}%
                     </div>
                     <div className="text-xs text-gray-400">Confidence</div>
                     <Progress 
-                      value={signal.confidence * 100} 
+                      value={adjustedConfidence * 100} 
                       className="mt-1 h-2"
                     />
                   </div>
@@ -181,7 +199,7 @@ const SmartTradingSignals = ({ selectedSymbols, marketData, pocketOptionData, sm
                   <div className="bg-slate-700/20 rounded-lg p-3">
                     <h5 className="text-gray-300 text-sm font-medium mb-2">🤖 AI Analysis</h5>
                     <div className="text-xs text-gray-400">
-                      {signal.reasoning || `Smart signal generated based on ${signal.factorsConsidered || 'multiple'} technical factors with ${(signal.confidence * 100).toFixed(0)}% confidence considering both market and Pocket Option data sources.`}
+                      {signal.reasoning || `Smart signal generated based on ${signal.factorsConsidered || 'multiple'} technical factors with ${(adjustedConfidence * 100).toFixed(0)}% confidence considering both market and Pocket Option data sources.`}
                     </div>
                   </div>
 
