@@ -57,6 +57,11 @@ const SmartTradingSignals = ({ selectedSymbols, marketData, pocketOptionData, sm
     return Math.min(1, conf);
   })();
 
+  const expectedReward = signal.expectedReward || 1.5; // from AI model or default
+  const expectedRisk = signal.expectedRisk || 1; 
+  
+  const tradeQuality = ((adjustedConfidence * expectedReward) / expectedRisk).toFixed(2);
+
 
   const formatPercentage = (value) => {
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
