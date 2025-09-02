@@ -70,6 +70,8 @@ const EnhancedTradingSignals = ({ selectedSymbols, marketData, pocketOptionData,
       success
     };
   };
+  const signalStrength = 
+  (marketIndicators.rsiSignal + marketIndicators.macdSignal + marketIndicators.trendScore) / 3;
 
   const getActionColor = (action) => {
     switch (action) {
